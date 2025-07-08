@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CalculateSales {
@@ -37,7 +39,63 @@ public class CalculateSales {
 		}
 
 		// ※ここから集計処理を作成してください。(処理内容2-1、2-2)
+		//listFilesメソッドにて指定したディレクトリに含まれる対象ファイル情報を格納
+		//listFiles() メソッド：File オブジェクトが表すディレクトリ内のすべてのファイルとサブディレクトリを抽象パス名として返す
+		//listFiles() メソッドの戻り値は、 File オブジェクトの配列 (File[]) になる
+		File[] files = new File(args[0]).listFiles();
 
+		//対象の売上ファイルを格納するためのrcdFilesリストを宣言
+		List<File> rcdFiles = new ArrayList<>();
+
+		//指定したパスに存在するFile オブジェクトの総数、つまりそのパス先に存在するファイルの数だけ処理を繰り返す
+		for(int i = 0; i < files.length ; i++) {
+			//files[i].getName()でファイル名取得できる
+			String fileName = files[i].getName();
+
+			//.isFile→ファイルかどうかを調べる
+			//拡張子rcdかつファイル名が数字8桁のファイル名だったら、List(ArrayList)に追加する
+			if(files[i].isFile() && fileName.matches("^[0-9]{8}.rcd$")) {
+				rcdFiles.add(files[i]);
+			}
+		}
+
+		//支店定義ファイル読み込み
+		BufferedReader br = null;
+
+		//rcdFilesに複数の売上ファイルを格納しているので、その数だけ処理を繰り返す
+		for(int i = 0; i < rcdFiles.size(); i++) {
+			try {
+				//売上ファイルの1行目には支店コード、2行目には売上金額が入っている
+				br = new BufferedReader(new FileReader(rcdFiles.get(i)));
+
+
+				//ファイルから読み込んだ情報は一律で文字列として扱われるので、Long型に変換する
+				//売上金額は、fileContents.get(1)で表すことができる このままだとエラー
+				long fileSale = Long.parseLong(fileContents.get(1));
+
+				//読み込んだ売上金額を加算する
+				//Long SaleAmount = 売上金額を入れたMap.get(支店コード) + long に変換した売上金額;
+
+				//加算した売上金額をMapに追加
+
+			} catch(IOException e)  {
+				System.out.println(UNKNOWN_ERROR);
+				return;
+			}finally {
+				// ファイルを開いている場合
+				if(br != null) {
+					try {
+						// ファイルを閉じる
+						br.close();
+					} catch(IOException e) {
+						System.out.println(UNKNOWN_ERROR);
+						return;
+					}
+				}
+			}
+			return;
+
+		}
 
 
 		// 支店別集計ファイル書き込み処理
@@ -65,10 +123,23 @@ public class CalculateSales {
 			br = new BufferedReader(fr);
 
 			String line;
+			String[] items;
+
 			// 一行ずつ読み込む
 			while((line = br.readLine()) != null) {
-				// ※ここの読み込み処理を変更してください。(処理内容1-2)
-				System.out.println(line);
+				// 処理内容1-2
+				//splitにて文字列をカンマで分割
+				items = line.split(",");
+
+				//Map「branchNames」に支店コードと支店名を追加する
+				//支店コードは配列の0番目、支店名は配列の1番目に入っている
+				branchNames.put(items[0], items[1]);
+
+				//Map「 branchSales」に支店コードと売上金額を追加する
+				//売上金額はまだ不明だがシステム上前日の売上金額を繰り越さないため、「0」円で追加
+				//売上金額はlong型　単純に0と入れるだけではint型で扱われてしまう
+				//Longで固定値を追加する場合は、明示的にLongの整数と示す(=数字に大文字Lをつける)orキャストしてもいい((データ型)式みたいな書き方でも可)
+				branchSales.put(items[0], 0L);
 			}
 
 		} catch(IOException e) {
