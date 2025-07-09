@@ -1,8 +1,10 @@
 package jp.alhinc.calculate_sales;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -183,8 +185,39 @@ public class CalculateSales {
 	 * @return 書き込み可否
 	 */
 	private static boolean writeFile(String path, String fileName, Map<String, String> branchNames, Map<String, Long> branchSales) {
-		// ※ここに書き込み処理を作成してください。(処理内容3-1)
+		// 処理内容3-1
+		BufferedWriter bw = null;
 
+		try {
+			File file = new File(path, fileName);
+			bw = new BufferedWriter(new FileWriter(file));
+
+			//変数keyに、Map「branchNames」から取得したキーを代入する
+			//keySetメソッドで、キーの一覧を取り出す
+			//拡張for文で、1つめのキーが取得出来たら3つ目、というように次々Keyに上書きされていく
+			for (String key : branchNames.keySet()) {
+				//出力内容：(各支店の)支店コード,支店名,売上金額
+				//一行前で、変数keyに支店コードの値が入ったので、それを活用する
+				bw.write(key + "," + branchNames.get(key) + "," + branchSales.get(key));
+				//ファイルへ書き込む際に、明示的に改行させる
+				bw.newLine();
+			}
+
+		} catch(IOException e) {
+			System.out.println(UNKNOWN_ERROR);
+			return false;
+		} finally {
+			// 書き込みファイルがnull出ない場合
+			if(bw != null) {
+				try {
+					//closeメソッドでファイルへのデータ出力の流れを止める
+					bw.close();
+				} catch(IOException e) {
+					System.out.println(UNKNOWN_ERROR);
+					return false;
+				}
+			}
+		}
 		return true;
 	}
 
