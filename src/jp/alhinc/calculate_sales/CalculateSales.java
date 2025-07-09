@@ -65,18 +65,32 @@ public class CalculateSales {
 		//rcdFilesに複数の売上ファイルを格納しているので、その数だけ処理を繰り返す
 		for(int i = 0; i < rcdFiles.size(); i++) {
 			try {
-				//売上ファイルの1行目には支店コード、2行目には売上金額が入っている
+				//売上ファイル「rcdFiles」を読み込む
 				br = new BufferedReader(new FileReader(rcdFiles.get(i)));
 
+				//売上金額を入れるためのリスト「fileContents」を作成する→ここの理解が抜けてた
+				ArrayList<String> fileContents = new ArrayList<>();
+				//rcdFilesの1行目に支店コード、2行目には売上金額が入っている
+				//最後の行まで読み込み、fileContentsに要素を1つずつ追加していく
+				String line = "";
+				while((line = br.readLine()) != null) {
+					fileContents.add(line);
+				}
+
+				//branchCode変数に、fileContentsリストの1つめの要素、つまり支店コードを入れる
+				//branchCodeは、後でMapの支店コードをKeyにValueを取り出す際に使用する
+				String branchCode = fileContents.get(0);
 
 				//ファイルから読み込んだ情報は一律で文字列として扱われるので、Long型に変換する
-				//売上金額は、fileContents.get(1)で表すことができる このままだとエラー
+				//long型のfileSale変数に、fileContentsリストの2つめの要素、つまり売上金額を入れる
 				long fileSale = Long.parseLong(fileContents.get(1));
 
 				//読み込んだ売上金額を加算する
-				//Long SaleAmount = 売上金額を入れたMap.get(支店コード) + long に変換した売上金額;
+				//Map「branchSales」のKey(支店コード)を渡してバリュー(売上金額)を取り出し、longに変換した売上金額(foleSale)を加算する
+				Long saleAmount = branchSales.get(branchCode) + fileSale;
 
-				//加算した売上金額をMapに追加
+				//加算した売上金額をMap「branchSales」に追加
+				branchSales.put(branchCode, saleAmount);
 
 			} catch(IOException e)  {
 				System.out.println(UNKNOWN_ERROR);
@@ -93,7 +107,6 @@ public class CalculateSales {
 					}
 				}
 			}
-			return;
 
 		}
 
